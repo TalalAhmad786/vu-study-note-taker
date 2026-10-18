@@ -1,0 +1,9 @@
+node_modules
+.next
+.env*
+!.env.example
+!.env.production.example
+parser
+public/pdf.worker.min.mjs
+*.log
+.DS_Store

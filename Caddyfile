@@ -1,0 +1,23 @@
+# HTTPS front for VU Study. Caddy obtains and renews the certificate for APP_DOMAIN automatically
+# (the domain's DNS A record must point at this server, and ports 80/443 must be open).
+{$APP_DOMAIN} {
+	encode zstd gzip
+
+	# Docling uploads go through /api/parse (the app caps files at 50 MB).
+	request_body {
+		max_size 60MB
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		X-Frame-Options "DENY"
+		-Server
+	}
+
+	reverse_proxy web:3000 {
+		# Chat answers and page shells stream; pass every chunk straight through.
+		flush_interval -1
+	}
+}

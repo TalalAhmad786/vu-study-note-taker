@@ -1,0 +1,59 @@
+# VU Study on a VPS: web app + Docling parser + Caddy (HTTPS).
+# Configuration comes from ./.env (copy .env.production.example and fill it in).
+#   docker compose up -d --build     start / update
+#   docker compose logs -f web       follow app logs
+
+services:
+  web:
+    build:
+      context: .
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+    env_file: .env
+    environment:
+      DOCLING_URL: http://parser:5001
+    depends_on:
+      - parser
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/login').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+    restart: unless-stopped
+
+  parser:
+    build: ./parser
+    volumes:
+      - models:/models
+    # Leave CPU and memory for the app while a long maths conversion runs.
+    cpus: "6"
+    mem_limit: 12g
+    # Importing Docling takes ~25 s; until healthy, uploads fall back to the in-browser parsers.
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5001/health', timeout=4)"]
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2.11.4-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - web
+    restart: unless-stopped
+
+volumes:
+  models:
+  caddy_data:
+  caddy_config:

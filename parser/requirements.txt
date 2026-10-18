@@ -1,0 +1,5 @@
+# Pinned to releases at least two weeks old when added (2026-10-18).
+docling==2.133.0
+fastapi==0.142.2
+uvicorn==0.54.0
+python-multipart==0.0.32
