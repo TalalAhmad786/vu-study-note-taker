@@ -42,6 +42,8 @@ Docling upload then downloads its models (~1 GB) into the `models` volume; later
 
 ## 4. Updating
 
+If the code is already on the server (e.g. `git pull`), run `scripts/deploy.sh` there with no arguments.
+
 Run `scripts/deploy.sh user@your-vps` again. It syncs the code and rebuilds; the server's `.env`,
 the models and the HTTPS certificates are kept.
 
