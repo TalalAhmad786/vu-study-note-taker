@@ -1,0 +1,21 @@
+# Use a reverse proxy that already runs on the server (e.g. another project's Caddy on 80/443)
+# instead of the bundled Caddy. Enable it from .env:
+#   COMPOSE_FILE=docker-compose.yml:docker-compose.proxy.yml
+#   PROXY_NETWORK=<the proxy's docker network>
+# then point the proxy at  vu-study-web:3000  (see DEPLOY.md).
+
+services:
+  caddy:
+    profiles: ["bundled-proxy"]   # not started in this mode
+
+  web:
+    networks:
+      default: {}
+      proxy:
+        # Unique name on the shared network, so it can't clash with the other project's services.
+        aliases: [vu-study-web]
+
+networks:
+  proxy:
+    external: true
+    name: ${PROXY_NETWORK:?set PROXY_NETWORK in .env to the existing proxy's docker network}

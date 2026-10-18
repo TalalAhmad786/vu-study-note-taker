@@ -1,0 +1,21 @@
+# Site block for an EXISTING Caddy (docker-compose.proxy.yml mode).
+# Append this to that Caddy's Caddyfile, replacing the domain if needed, then reload Caddy.
+study.chakes.online {
+	encode zstd gzip
+
+	request_body {
+		max_size 60MB
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		X-Frame-Options "DENY"
+		-Server
+	}
+
+	reverse_proxy vu-study-web:3000 {
+		flush_interval -1
+	}
+}
